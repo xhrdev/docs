@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@xhrdev/docs",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "imports": {
+    "#src/*.js": "./src/*.js",
+    "#sdk/*.js": "./sdk/*.js",
+    "#test/*.js": "./test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xhrdev/docs.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "scripts": {
+    "prepare": "husky",
+    "eslint": "eslint .",
+    "lint": "npm run eslint",
+    "lint:fix": "eslint --fix .",
+    "dev": "npm run docs:dev",
+    "build": "npm run docs:build",
+    "preview": "npm run docs:preview",
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress dev",
+    "npm:prepare": "mkdir -p dist && node scripts/generate-openapi-string.js && cp sdk/* dist/ && node scripts/replace-imports.js dist/sdk.ts && npx tsc -p tsconfig.build.json && jq '{publishConfig, main, typings, \"$schema\", type} | . + { name: \"@xhrdev/sdk\", main: \"sdk.js\", typings: \"sdk.d.ts\", type: \"module\" }' package.json >dist/package.json && rm -f dist/index.html dist/sdk.ts dist/spec-generated.ts dist/openapi.ts && node scripts/replace-imports.js dist/sdk.js",
+    "npm:prepare:npm": "cp -r dist dist0 && jq 'del(.publishConfig) | . + { publishConfig: { registry: \"https://registry.npmjs.org/\", \"access\": \"public\", } }' dist/package.json >dist0/package.json",
+    "sdk:build": "npx openapi-typescript ./sdk/openapi.yml -o ./sdk/openapi.ts",
+    "sdk:preview": "npx live-server ./sdk --port=8080 --open=index.html --no-css-inject --no-html-inject --no-js-inject --cors",
+    "sdk:copy-artifacts": "mkdir -p ./.vitepress/dist/sdk && cp sdk/openapi.yml ./.vitepress/dist/ && cp sdk/index.html ./.vitepress/dist/api.html",
+    "knip": "knip --dependencies"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "21.2.4",
+    "@commitlint/config-angular": "21.2.4",
+    "@scalar/api-reference": "1.77.0",
+    "@skilbjo/config-rc": "1.0.63",
+    "@types/node": "26.6.6",
+    "@typescript-eslint/eslint-plugin": "8.72.1",
+    "@typescript-eslint/parser": "8.72.1",
+    "@typescript/native-preview": "7.0.0-dev.20260707.2",
+    "eslint": "10.14.0",
+    "husky": "9.1.7",
+    "knip": "6.44.1",
+    "live-server": "1.2.2",
+    "openapi-typescript": "7.13.0",
+    "sitemap": "10.0.0",
+    "vitepress": "1.6.4",
+    "vitepress-plugin-llms": "1.14.0"
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-angular"
+    ]
+  },
+  "overrides": {
+    "minimatch@^10": "11.0.5",
+    "eslint-plugin-import-x": {
+      "minimatch": "10.2.6"
+    }
+  }
+}

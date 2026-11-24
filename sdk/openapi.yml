@@ -1,0 +1,1677 @@
+openapi: 3.0.3
+info:
+  title: xhr.dev on-prem API
+  version: 2.0.0
+  description: |
+    xhr.dev solves Akamai Bot Manager and DataDome challenges. This spec
+    describes the HTTP API exposed by the on-prem Docker container you run
+    inside your own infrastructure — there is no hosted/cloud server.
+
+    Akamai additionally exposes a stateful WebSocket session at
+    `/akamai/session`, documented separately (see docs.xhr.dev/api-akamai)
+    since OpenAPI 3.0 doesn't model WebSocket protocols.
+
+    ## Authentication
+
+    **Self-hosted (the product): none.** The container is licence-gated at
+    startup, not per-request — there is no API key, and anything that can
+    reach its port can use it. Run it behind your own network boundary.
+
+    **Hosted trial box: an API key.** During an evaluation we lend you a
+    solver we run, which sits behind a reverse proxy that requires an
+    `x-api-key` header on `/akamai/*` and `/dd/*`. `/hc` stays open. That key
+    is issued with the trial and stops working when the trial ends; it has no
+    equivalent in a self-hosted deployment.
+
+    So `ApiKeyAuth` below is **optional**: send it against the trial server,
+    omit it against your own container.
+  contact:
+    name: xhr.dev support
+    email: info@xhr.dev
+
+servers:
+  - url: http://localhost:3000
+    description: Your self-hosted xhrdev container — no API key
+  - url: https://trial.xhr.dev
+    description: >-
+      Hosted trial box, for evaluations. Requires the x-api-key issued with
+      your trial.
+  - url: "{scheme}://{host}:{port}"
+    description: >-
+      Your own deployment, wherever you run the container — an IP address or
+      a subdomain of your own choosing.
+    variables:
+      scheme:
+        default: http
+        enum: [http, https]
+        description: >-
+          http talks to the container directly. https if you've put your own
+          TLS-terminating reverse proxy in front of it (the container itself
+          only speaks plain HTTP).
+      host:
+        default: your-host-or-ip
+        description: >-
+          The host, IP, or subdomain where you run the xhr.dev container (or
+          your reverse proxy in front of it).
+      port:
+        default: "3000"
+        description: >-
+          The container's port. Change this if your reverse proxy fronts it
+          on a different port (e.g. 443 for https).
+
+# Optional: the empty requirement means "no authentication" is also valid,
+# which is what a self-hosted container wants. Clients aimed at the trial box
+# send ApiKeyAuth instead.
+security:
+  - {}
+  - ApiKeyAuth: []
+
+tags:
+  - name: health
+    description: Container liveness
+  - name: akamai
+    description: |
+      Solves Akamai Bot Manager sensor challenges (_abck / bm-sz), SBSD and
+      the pixel collector. /solve fetches and drives the challenge itself.
+      Browser-driven integrations can instead use the WebSocket session at
+      /akamai/session.
+  - name: datadome
+    description: |
+      Solves DataDome captcha and interstitial challenges. Single-shot HTTP
+      — no WebSocket session (unlike Akamai). /solve takes an
+      already-extracted challenge payload and returns a prepared submission
+      for the caller to send.
+  - name: f5
+    description: |
+      Solves F5/Shape challenges. Single-shot HTTP, like DataDome. /solve
+      takes the launcher and VM bodies the protected page served the caller
+      and returns the attested header bag the VM set on a request the caller
+      names, for the caller to send themselves.
+
+paths:
+  /hc:
+    get:
+      operationId: getHealthCheck
+      summary: Health check
+      tags: [health]
+      responses:
+        '200':
+          description: Container is up
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    enum: ['ok']
+
+  /stats:
+    get:
+      operationId: getStats
+      summary: Aggregate solve-rate and process metrics
+      description: >-
+        Counts and rates only — no request URLs, payloads, or proxy details.
+        Safe to scrape into your own monitoring.
+      tags: [health]
+      responses:
+        '200':
+          description: Current metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stats'
+        '401':
+          description: >-
+            Trial box only — missing or invalid x-api-key. A self-hosted
+            container never returns this.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /akamai/solve:
+    post:
+      operationId: postAkamaiSolve
+      summary: Solve an Akamai challenge starting from a URL
+      tags: [akamai]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AkamaiSolveRequest'
+      responses:
+        '200':
+          description: Solve result (or capture result)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AkamaiSolveResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: >-
+            Trial box only — missing or invalid x-api-key. A self-hosted
+            container never returns this.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Solve failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AkamaiSolveResponse'
+
+  /akamai/sbsd/generate-session:
+    post:
+      operationId: postAkamaiSbsdGenerateSession
+      summary: Issue an SBSD ledger for one live document
+      description: >-
+        Answers a FIFO ledger of bodies for the document described in the
+        request. The caller rewrites its page's own POSTs to the bundle's own
+        path to use them, in order — that path varies by property and is not
+        always /.well-known/sbsd. The ledger is bound to that one document
+        snapshot and is not portable to another load.
+      tags: [akamai]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AkamaiSbsdLedgerRequest'
+      responses:
+        '200':
+          description: A complete ledger
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AkamaiSbsdLedgerResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AkamaiSbsdLedgerResponse'
+        '401':
+          description: >-
+            Trial box only — missing or invalid x-api-key. A self-hosted
+            container never returns this.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: >-
+            The generator declined to produce a complete ledger for this
+            snapshot. complete is false and receipt says what could not be
+            reconciled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AkamaiSbsdLedgerResponse'
+        '503':
+          description: The deadline expired while waiting for queue capacity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AkamaiSbsdLedgerResponse'
+        '504':
+          description: Generation did not complete before the deadline
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AkamaiSbsdLedgerResponse'
+
+  /akamai/pixel/generate:
+    post:
+      operationId: postAkamaiPixelGenerate
+      summary: Produce the POST Akamai's pixel collector would send
+      description: >-
+        Runs the collector script the document loads from /akam/<n>/<hex> and
+        returns the one request it would make. Nothing is sent: the caller
+        sends the returned request through its own cookie jar, and the
+        response re-issues ak_bmsc. The collector is caller-supplied code, so
+        every field is size-capped and every refusal is a 400 before any work
+        starts.
+      tags: [akamai]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AkamaiPixelRequest'
+      responses:
+        '200':
+          description: The request to send
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AkamaiPixelResponse'
+        '400':
+          description: Request did not satisfy the contract
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AkamaiPixelErrorResponse'
+        '401':
+          description: >-
+            Trial box only — missing or invalid x-api-key. A self-hosted
+            container never returns this.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: >-
+            No request came out. error.code is script-not-in-document or
+            no-request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AkamaiPixelErrorResponse'
+        '429':
+          description: The solve queue is full. Retry-After is 1.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AkamaiPixelErrorResponse'
+        '500':
+          description: The collector could not be run (generation-failed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AkamaiPixelErrorResponse'
+        '503':
+          description: Capacity was not available before the deadline. Retry-After is 1.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AkamaiPixelErrorResponse'
+        '504':
+          description: The collector did not finish in time (generation-timeout)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AkamaiPixelErrorResponse'
+        '507':
+          description: The collector exceeded its memory allowance (generation-memory-limit)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AkamaiPixelErrorResponse'
+
+  /dd/solve:
+    post:
+      operationId: postDdSolve
+      summary: Solve a DataDome challenge given an extracted payload
+      tags: [datadome]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DatadomeSolveRequest'
+      responses:
+        '200':
+          description: A prepared submission for the caller to send
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatadomeSolveResponse'
+        '400':
+          description: >-
+            Validation error (code dd.request.invalid) or an unsupported
+            challenge type (dd.task.unsupported)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DDErrorResponse'
+        '401':
+          description: >-
+            Trial box only — missing or invalid x-api-key. A self-hosted
+            container never returns this.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: >-
+            IP is banned (code dd.ip.banned; challenge carries t=bv). Nothing
+            to solve — rotate to a different exit IP.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DDErrorResponse'
+        '500':
+          description: >-
+            Solve failed or timed out (code dd.solve.failed or
+            dd.solve.timeout)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DDErrorResponse'
+
+  /f5/solve:
+    post:
+      operationId: postF5Solve
+      summary: Solve an F5/Shape challenge given the served script bodies
+      description: >-
+        Returns the header bag the VM set on the named request. Makes no
+        outbound request of its own — there is no proxy field, and the
+        launcher, VM and token bodies must all arrive in this request body.
+      tags: [f5]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/F5SolveRequest'
+      responses:
+        '200':
+          description: Attested headers for the caller to send
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/F5SolveResponse'
+        '400':
+          description: Validation error (code f5.request.invalid)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/F5ErrorResponse'
+        '401':
+          description: >-
+            Trial box only — missing or invalid x-api-key. A self-hosted
+            container never returns this.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: >-
+            Solve failed or timed out (code f5.solve.failed or
+            f5.solve.timeout)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/F5ErrorResponse'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: >-
+        Trial-only. The hosted evaluation box sits behind a reverse proxy
+        that checks this header on /akamai/*, /dd/* and /f5/*; /hc is always
+        open.
+        A self-hosted container does not read it — leave it unset.
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+
+    SolveStats:
+      type: object
+      description: >-
+        Attempt counts plus derived rates. `attempts` is every recorded
+        attempt (successful + failed + abandoned); `resolved` is the subset
+        the solver actually finished. successRate/successPercent/
+        failurePercent are over `resolved`, so a caller that hangs up early
+        cannot drag the rate down; abandonedPercent is over `attempts`.
+        Rate fields are null until something has resolved.
+      required: [abandoned, attempts, failed, resolved, successful]
+      properties:
+        abandoned:
+          type: integer
+          description: Caller went away before the solve resolved.
+        abandonedPercent:
+          type: number
+          nullable: true
+        attempts:
+          type: integer
+        failed:
+          type: integer
+        failurePercent:
+          type: number
+          nullable: true
+        resolved:
+          type: integer
+        successful:
+          type: integer
+        successPercent:
+          type: number
+          nullable: true
+        successRate:
+          type: number
+          nullable: true
+          description: 0-1 over resolved attempts; null if nothing resolved.
+
+    Stats:
+      type: object
+      required: [memory, pid, solves, ts, uptimeSeconds]
+      properties:
+        memory:
+          type: object
+          properties:
+            heapTotal:
+              type: integer
+            heapUsed:
+              type: integer
+            rss:
+              type: integer
+        pid:
+          type: integer
+        solves:
+          allOf:
+            - $ref: '#/components/schemas/SolveStats'
+            - type: object
+              description: Overall counts, plus the same shape broken down.
+              properties:
+                byProfile:
+                  type: object
+                  additionalProperties:
+                    $ref: '#/components/schemas/SolveStats'
+                bySolver:
+                  type: object
+                  description: Keyed by akamai / datadome.
+                  additionalProperties:
+                    $ref: '#/components/schemas/SolveStats'
+                byType:
+                  type: object
+                  description: Keyed by capture / captcha / interstitial / sensor.
+                  additionalProperties:
+                    $ref: '#/components/schemas/SolveStats'
+        ts:
+          type: string
+          format: date-time
+        uptimeSeconds:
+          type: integer
+
+    ProfileSnapshot:
+      type: object
+      required: [id, chromeFullVersion, os, timezone, timezoneOffsetMinutes, tlsClientHello, userAgent]
+      properties:
+        id:
+          type: string
+          description: 'Format: chrome-<version>-<os>'
+          example: chrome-146-macos
+        chromeFullVersion:
+          type: string
+          example: 146.0.7680.81
+        os:
+          type: string
+          enum: [linux, macos, windows, windows10, windows11]
+        timezone:
+          type: string
+          example: America/New_York
+        timezoneOffsetMinutes:
+          type: integer
+          example: -300
+        tlsClientHello:
+          type: string
+          example: chrome_146
+        userAgent:
+          type: string
+        httpHeaderTemplates:
+          $ref: '#/components/schemas/HeaderTemplates'
+
+    HeaderTemplates:
+      type: object
+      properties:
+        form:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        iframe:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        image:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        xhr:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+
+    JsProfilePayload:
+      type: object
+      description: >-
+        Browser fingerprint payload. Partial objects are accepted; unset
+        fields fall back to solver defaults. See the Akamai/DataDome API
+        reference docs for the full field list.
+      properties:
+        os:
+          type: string
+          enum: [macos, ubuntu, windows10, windows11]
+        chromeVersion:
+          type: string
+        hardwareConcurrency:
+          type: integer
+        deviceMemory:
+          type: integer
+        timezone:
+          type: string
+        hardware:
+          type: object
+          properties:
+            canvas:
+              type: string
+            emptyCanvas:
+              type: string
+            fonts:
+              type: array
+              items:
+                type: string
+            webgl:
+              type: object
+              properties:
+                image:
+                  type: string
+                renderer:
+                  type: string
+                vendor:
+                  type: string
+                params:
+                  type: object
+        screen:
+          type: object
+          properties:
+            outerHeight:
+              type: number
+            innerHeight:
+              type: number
+            width:
+              type: number
+            height:
+              type: number
+        battery:
+          type: object
+          description: >-
+            Optional. Send all four fields or omit the object entirely —
+            there is no useful partial battery reading.
+          properties:
+            charging:
+              type: boolean
+            chargingTime:
+              type: number
+              nullable: true
+              description: null means Infinity, matching the browser API.
+            dischargingTime:
+              type: number
+              nullable: true
+              description: null means Infinity, matching the browser API.
+            level:
+              type: number
+              minimum: 0
+              maximum: 1
+      additionalProperties: true
+
+    AkamaiSolveRequest:
+      type: object
+      required: [url, profile, js_profile]
+      properties:
+        url:
+          type: string
+          format: uri
+        profile:
+          $ref: '#/components/schemas/ProfileSnapshot'
+        js_profile:
+          $ref: '#/components/schemas/JsProfilePayload'
+        script:
+          type: object
+          properties:
+            html:
+              type: string
+            js:
+              type: string
+            url:
+              type: string
+              format: uri
+        cookies:
+          type: object
+          additionalProperties:
+            type: string
+        proxy:
+          type: string
+          description: >-
+            Honoured, unlike the DataDome endpoint's. An Akamai solve fetches
+            the sensor script from the target; it never posts to the origin.
+            Omitting this does not go direct — the container falls back to
+            127.0.0.1:8080 and fails with ECONNREFUSED if nothing is there.
+        mode:
+          type: string
+          enum: [abck, sbsd]
+        maxSensors:
+          type: integer
+        submit:
+          type: boolean
+          deprecated: true
+          description: Legacy and being removed. The solver always behaves as false.
+        timeout:
+          type: integer
+          default: 20000
+        acceptCookieName:
+          type: string
+          default: _abck
+        request_id:
+          type: string
+        attempt_id:
+          type: string
+        correlation_id:
+          type: string
+        readiness_state:
+          type: string
+          enum: [created, ready, solving, completed, aborted]
+        spider:
+          type: string
+        deadline_budget_ms:
+          description: Overrides timeout when both are sent.
+          type: integer
+        bm_lso_policy:
+          description: >-
+            sbsd mode only. What is done with the bm_lso cookie: withhold (the
+            default) drops it, refresh re-stamps it to now, passthrough leaves
+            it. An unrecognised value is a 400.
+          type: string
+          enum: [withhold, refresh, passthrough]
+          default: withhold
+        intercepted_request:
+          description: >-
+            The request the caller's interceptor caught. When present, a
+            submission whose method or target differs fails the solve with a
+            correlation-mismatch error instead of being sent.
+          type: object
+          required: [url, method]
+          properties:
+            url:
+              type: string
+              format: uri
+            method:
+              type: string
+            headers:
+              type: object
+              additionalProperties:
+                type: string
+            content_type:
+              type: string
+            body:
+              type: object
+              properties:
+                raw:
+                  type: string
+                size:
+                  type: number
+                  minimum: 0
+                sha256:
+                  type: string
+                truncated:
+                  type: boolean
+            captured_at_ms:
+              type: number
+              minimum: 0
+            matched_reason:
+              type: string
+        queue_metadata:
+          description: >-
+            The caller's own queue numbers. Written to the server log; changes
+            nothing about the solve.
+          type: object
+          properties:
+            candidate_id:
+              type: integer
+              minimum: 1
+            enqueued_at_ms:
+              type: number
+              minimum: 0
+            queue_depth_at_enqueue:
+              type: integer
+              minimum: 0
+        interaction:
+          description: >-
+            Which input the solve drives. emitter (the default) drives pointer
+            input for as long as the solve lasts; passive drives none.
+            passive is for mode abck only — with mode sbsd it is refused. An
+            unrecognised value is a 400, never a fallback.
+          type: string
+          enum: [emitter, passive]
+          default: emitter
+
+    AkamaiPixelRequest:
+      type: object
+      required: [document, script, profile]
+      properties:
+        document:
+          type: object
+          required: [url, html]
+          properties:
+            url:
+              type: string
+              format: uri
+              description: The document's URL. Absolute https, at most 8 KiB.
+            html:
+              type: string
+              description: The document as served. At most 8 MiB.
+            cookieHeader:
+              type: string
+              description: >-
+                document.cookie — the JavaScript-visible jar. Optional, at most
+                64 KiB.
+        script:
+          type: object
+          required: [url, source]
+          properties:
+            url:
+              type: string
+              format: uri
+              description: >-
+                The collector's absolute URL as the document names it. Absolute
+                https, on the document's own origin, and a script the document
+                actually loads.
+            source:
+              type: string
+              description: The collector as served. At most 2 MiB.
+        profile:
+          type: object
+          required: [id]
+          properties:
+            id:
+              type: string
+              description: chrome-<version>-<os>, and must be registered on the container.
+              example: chrome-151-macos
+        seed:
+          type: string
+          description: >-
+            Optional, at most 256 bytes. Send the same value across requests
+            that describe one device.
+
+    AkamaiPixelResponse:
+      type: object
+      required: [ok, request, receipt]
+      properties:
+        ok:
+          type: boolean
+          description: Always true on a 200.
+        request:
+          description: The request to send, as given.
+          type: object
+          required: [method, url, contentType, body]
+          properties:
+            method:
+              type: string
+            url:
+              type: string
+            contentType:
+              type: string
+              nullable: true
+              description: The Content-Type the collector set, or null when it set none.
+            body:
+              type: string
+        receipt:
+          type: object
+          required: [atMs, faults, profileId, scriptsRun]
+          properties:
+            profileId:
+              type: string
+            atMs:
+              type: integer
+              description: Milliseconds the collector took to produce the request.
+            scriptsRun:
+              type: integer
+              description: How many of the document's scripts executed.
+            faults:
+              $ref: '#/components/schemas/AkamaiPageScriptFaults'
+
+    AkamaiPageScriptFaults:
+      description: Script errors seen while the page's scripts ran.
+      type: object
+      required: [total, errors, rejections, unattributed, first]
+      properties:
+        total:
+          type: integer
+        errors:
+          type: integer
+        rejections:
+          type: integer
+        unattributed:
+          type: integer
+        first:
+          type: string
+          nullable: true
+          description: The first fault, described. Null when there were none.
+
+    AkamaiPixelErrorResponse:
+      type: object
+      required: [ok, error]
+      properties:
+        ok:
+          type: boolean
+          description: Always false.
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              description: >-
+                pixel_* on a 400 (the message names the field);
+                script-not-in-document or no-request on a 422; queue-full on
+                a 429; generation-unavailable on a 503; generation-timeout on
+                a 504; generation-memory-limit on a 507; generation-failed on
+                a 500.
+            message:
+              type: string
+        receipt:
+          type: object
+          description: Present on a 422 when the collector raised script errors.
+          properties:
+            faults:
+              $ref: '#/components/schemas/AkamaiPageScriptFaults'
+
+    AkamaiSbsdLedgerRequest:
+      type: object
+      required: [bundle, document, profile]
+      description: >-
+        State what the server cannot derive; everything else is defaulted from
+        the document and profile in the same request. No property outside this
+        schema is accepted — an unknown key is a 400 rather than being ignored.
+        The whole request is bounded at 16 MB, checked before it takes a queue
+        slot.
+      properties:
+        schema:
+          type: string
+          description: Optional. The only accepted value.
+          enum: [akamai-sbsd-ledger-request/v3]
+        bundle:
+          type: object
+          required: [scriptSrc, source]
+          properties:
+            scriptSrc:
+              type: string
+              description: >-
+                The raw src attribute of the SBSD script tag, query string
+                included — the ?v= is not decoration. Must resolve to the
+                document's own HTTPS origin and carry a pathname.
+              example: /.well-known/sbsd?v=8f2c1a
+            source:
+              type: string
+              description: The bundle source as served. Max 2 MiB.
+        document:
+          type: object
+          required: [html, url]
+          properties:
+            url:
+              type: string
+              format: uri
+              description: >-
+                The live document's URL. HTTPS, no credentials, no fragment.
+            html:
+              type: string
+              description: >-
+                The document as served, undecoded. No per-field cap; the 16 MB
+                request limit is the bound.
+            cookieHeader:
+              type: string
+              description: >-
+                document.cookie, despite the name — the JavaScript-visible
+                jar, not the HTTP header. Optional; defaults to none, which is
+                the real state of a first visit.
+            epochMs:
+              type: integer
+              format: int64
+              description: >-
+                performance.timeOrigin, rounded. Identifies the document; one
+                older than five minutes is refused. Optional; defaults to one
+                second before the request arrives.
+            resourceEntries:
+              type: array
+              description: >-
+                performance.getEntriesByType('resource'), each entry carrying
+                duration, initiatorType, name and startTime. Max 2048.
+                Optional; defaults to the buffer this document's own
+                subresources would produce. Sending [] is taken at its word.
+              items:
+                type: object
+            runtime:
+              $ref: '#/components/schemas/AkamaiSbsdDocumentRuntime'
+        inputSchedule:
+          type: string
+          description: >-
+            Which synthetic input the generation drives. mixed is the default.
+            none is refused with a 422 (input-schedule-incomplete) unless
+            subresources is also sent, because without input the bundle posts
+            no input-stream body and a ledger cannot complete. Never inferred;
+            an unrecognised value is a 400.
+          enum: [mixed, pointer-only, none]
+          default: mixed
+        subresources:
+          type: array
+          maxItems: 256
+          description: >-
+            The page's own scripts, fetched by the caller. Present, the
+            document's inline scripts and every external script whose URL is
+            listed run; any other URL answers 404, never the network. [] turns
+            this on with nothing served. Absent, the page's scripts stay inert.
+            At most 16 MiB of bodies in total; a URL may appear once;
+            stylesheets are refused.
+          items:
+            type: object
+            required: [url, contentType, body]
+            additionalProperties: false
+            properties:
+              url:
+                type: string
+                format: uri
+                description: Absolute https URL.
+              contentType:
+                type: string
+              body:
+                type: string
+        profile:
+          type: object
+          required: [id]
+          properties:
+            id:
+              type: string
+              description: chrome-<version>-<os>, and must be registered on the container.
+              example: chrome-151-macos
+            chromeFullVersion:
+              type: string
+              description: >-
+                Four-part version. Optional; defaults to the version the named
+                profile declares, and must equal it when sent.
+              example: 151.0.7922.109
+            overrides:
+              type: object
+              description: >-
+                The claimed identity — deviceMemory, hardwareConcurrency,
+                languages, screen, timezone, timezoneOffsetMinutes. Optional;
+                naming a profile.id already implies the identity that profile
+                declares, so send this only to claim something different.
+                Declare the identity the browser presents; readings taken from
+                an emulated viewport are the usual cause of a solve that never
+                lands.
+
+    AkamaiSbsdDocumentRuntime:
+      type: object
+      description: >-
+        Readings taken from the live document. Every member is optional and
+        resolves individually, so a caller sends readings rather than a
+        complete snapshot. sessionStorage.akBmTabId is the one worth taking:
+        the server has to mint a fresh id per request when it is absent, while
+        the real page holds one for its whole lifetime. Whatever you do send,
+        take it in ONE evaluate call — these are compared against each other,
+        and readings spread across round-trips describe a page that never
+        existed.
+      properties:
+        connectionInfo:
+          type: object
+          required: [downlink, effectiveType, rtt, saveData]
+          properties:
+            downlink: { type: number }
+            effectiveType: { type: string }
+            rtt: { type: number }
+            saveData: { type: boolean }
+        domResourceInventory:
+          type: object
+          description: >-
+            Supplying this is what selects DOM reconciliation. For a browser
+            caller the html above IS the DOM, so reconciling costs a parse and
+            a diff and changes nothing — omit it unless your html is not the
+            document the page is running.
+          required: [capturedAtPerformanceMs, imgSrc, linkHref, scriptSrc]
+          properties:
+            capturedAtPerformanceMs: { type: number }
+            imgSrc:
+              type: array
+              items: { type: string }
+            linkHref:
+              type: array
+              items: { type: string }
+            scriptSrc:
+              type: array
+              items: { type: string }
+        functionToString:
+          type: object
+          required:
+            - descriptor
+            - length
+            - name
+            - prototypeKind
+            - sourceClass
+            - sourceSha256
+          description: >-
+            Function.prototype.toString as the page sees it, stringified
+            through a pristine child realm.
+          properties:
+            descriptor:
+              type: object
+              required: [configurable, enumerable, writable]
+              properties:
+                configurable: { type: boolean }
+                enumerable: { type: boolean }
+                writable: { type: boolean }
+            length: { type: integer }
+            name: { type: string }
+            prototypeKind:
+              type: string
+              enum: [defined, undefined]
+            sourceClass:
+              type: string
+              enum: [native, wrapped]
+            sourceSha256:
+              type: string
+              pattern: '^[0-9a-f]{64}$'
+        historyLength:
+          type: integer
+          minimum: 1
+        memoryInfo:
+          type: object
+          required: [jsHeapSizeLimit, totalJSHeapSize, usedJSHeapSize]
+          description: >-
+            Must satisfy 0 <= usedJSHeapSize <= totalJSHeapSize <=
+            jsHeapSizeLimit.
+          properties:
+            jsHeapSizeLimit: { type: integer }
+            totalJSHeapSize: { type: integer }
+            usedJSHeapSize: { type: integer }
+        sessionStorage:
+          type: object
+          properties:
+            akBmTabId:
+              type: string
+              nullable: true
+              description: >-
+                sessionStorage.ak_bm_tab_id exactly as the page holds it: the
+                time it was minted in eight base36 digits (not in the future),
+                then a base36 fraction. It only exists once the bundle has run,
+                which is why the first carrier has to be held. null or absent
+                asks the server to mint one, fresh per request, so send the
+                page's own. A value that is not shaped like a bundle-minted id
+                is a 400.
+              example: murv5og0k2rq7t1c
+        speechSynthesisVoices:
+          type: object
+          required: [localCount, totalCount]
+          properties:
+            localCount: { type: integer }
+            totalCount: { type: integer }
+
+    AkamaiSbsdLedgerResponse:
+      type: object
+      required: [complete, schema]
+      properties:
+        schema:
+          type: string
+          enum: [akamai-sbsd-ledger/v1]
+        complete:
+          type: boolean
+          description: >-
+            False on every non-200. A complete ledger is the only one safe to
+            use.
+        ok:
+          type: boolean
+        expectedCap:
+          type: integer
+          nullable: true
+          description: >-
+            How many rows the ledger carries. Capacity, not a promise — the
+            page emits as many carriers as it emits, and running out is a
+            hard stop rather than a fallback to the native body.
+        ordering:
+          type: string
+          enum: [sensor-emission-fifo]
+        runNonce:
+          type: string
+          format: uuid
+        ledgerId:
+          type: string
+          format: uuid
+        generatedAtEpochMs:
+          type: integer
+          format: int64
+        observedCount:
+          type: integer
+        submissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AkamaiSbsdSubmission'
+        binding:
+          type: object
+          description: >-
+            Digests of the inputs this ledger was computed from, so a mismatch
+            can be traced back to which one moved.
+        receipt:
+          type: object
+          description: What the generator resolved for each surface.
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+
+    AkamaiSbsdSubmission:
+      type: object
+      description: One row. Send them in index order, one per carrier POST.
+      properties:
+        index:
+          type: integer
+        body:
+          type: string
+          description: The body to put on the page's own carrier POST.
+        bytes:
+          type: integer
+        method:
+          type: string
+          enum: [POST]
+        resolvedUrl:
+          type: string
+          format: uri
+          description: Absolute target to use at the interception boundary.
+        url:
+          type: string
+          description: The sensor-observed target, retained as evidence.
+        sha256:
+          type: string
+        surface:
+          type: string
+
+    AkamaiSolveResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        accepted:
+          type: boolean
+        acceptance_cookie:
+          type: string
+        cookie_header:
+          type: string
+        cookies:
+          type: object
+          additionalProperties:
+            type: string
+        mode:
+          type: string
+          enum: [abck, sbsd]
+        outcome:
+          type: string
+        outcome_reason:
+          type: string
+        sensors_sent:
+          type: integer
+        max_sensors_reached:
+          type: boolean
+        last_response_status:
+          type: integer
+        error:
+          type: string
+
+    DDChallenge:
+      type: object
+      required: [cid, hsh, rt, s]
+      properties:
+        cid:
+          type: string
+        hsh:
+          type: string
+        rt:
+          type: string
+          enum: [c, i]
+        s:
+          type: number
+        ir:
+          type: integer
+        t:
+          type: string
+        b:
+          type: integer
+        e:
+          type: string
+
+    DatadomeSolveRequest:
+      type: object
+      required: [url, dd, ddCookie, profile, js_profile, iframeData]
+      properties:
+        url:
+          type: string
+          format: uri
+        dd:
+          $ref: '#/components/schemas/DDChallenge'
+        ddCookie:
+          type: string
+        profile:
+          $ref: '#/components/schemas/ProfileSnapshot'
+        js_profile:
+          $ref: '#/components/schemas/JsProfilePayload'
+        proxy:
+          type: string
+          deprecated: true
+          description: >-
+            Accepted and ignored. A solve makes no outbound request — verified
+            by sending an unroutable proxy and getting an identical prepared
+            submission back. The proxy that matters is the one you use for the
+            requests you make yourself.
+        os:
+          type: string
+          enum: [ubuntu, windows, windows10, windows11, macos]
+        script_id:
+          type: string
+        timeout:
+          type: integer
+          minimum: 1
+          maximum: 120000
+        spider:
+          type: string
+        iframeData:
+          type: object
+          properties:
+            html:
+              type: string
+            url:
+              type: string
+              format: uri
+            captchaLayout:
+              type: object
+              description: >-
+                Only meaningful for rt=c. version 1 as of this writing.
+              properties:
+                version:
+                  type: integer
+                coordinateSpace:
+                  type: string
+                handleQuad:
+                  type: object
+                viewport:
+                  type: object
+                  properties:
+                    width:
+                      type: number
+                    height:
+                      type: number
+            finalNavigationResponseBodySizes:
+              type: array
+              items:
+                type: integer
+            stylesheetAssets:
+              type: array
+              maxItems: 16
+              description: >-
+                The challenge document's linked stylesheets, fetched by you
+                and handed over — the solver makes no outbound requests.
+              items:
+                type: object
+                required: [url, body]
+                properties:
+                  url:
+                    type: string
+                    format: uri
+                  body:
+                    type: string
+            externalScripts:
+              type: array
+              maxItems: 4
+              description: >-
+                Required for new-style challenge documents, which load the
+                challenge logic from a separate script instead of inlining
+                it. Each `url` must be an https URL on captcha-delivery.com;
+                each `body` up to 4 MiB. Omitting this for a document that
+                needs it fails with dd.script.missing.
+              items:
+                type: object
+                required: [url, body]
+                properties:
+                  url:
+                    type: string
+                    format: uri
+                  body:
+                    type: string
+
+    DatadomeSolveResponse:
+      description: >-
+        A prepared submission. Send it yourself from the IP you intend to
+        browse from: DataDome binds the clearance cookie to the submitting
+        client. GET when body is absent (captcha), POST when present
+        (interstitial).
+      type: object
+      required: [origin, referer, url]
+      properties:
+        body:
+          description: >-
+            Present for an interstitial (rt=i) — POST it. Absent for a
+            captcha (rt=c), whose payload is already in the url query
+            string — send a GET.
+          type: string
+        origin:
+          type: string
+        referer:
+          type: string
+        url:
+          type: string
+
+    DDErrorResponse:
+      description: >-
+        Every /dd/solve failure. `code` is a stable closed enum to branch on;
+        `error` is static text chosen by the code, except on
+        dd.request.invalid, whose prose describes the caller's own request.
+        The cause of a solve failure is in the server log under
+        `correlationId` — do not parse the prose. The one exception is
+        dd.ip.banned's "IP is banned", kept byte-identical to what shipped
+        before codes existed because at least one client matches it exactly.
+      type: object
+      required: [code, correlationId, error]
+      properties:
+        code:
+          type: string
+          enum:
+            - dd.request.invalid
+            - dd.task.unsupported
+            - dd.ip.banned
+            - dd.script.missing
+            - dd.script.unsupported
+            - dd.solve.timeout
+            - dd.solve.failed
+        correlationId:
+          description: >-
+            Opaque per-request token, safe to quote in a support ticket. Ties
+            this response to its server-side log line.
+          type: string
+        error:
+          type: string
+
+    F5ErrorResponse:
+      description: >-
+        Every /f5/solve failure. `code` is a stable closed enum to branch on;
+        `error` is static text chosen by the code, except on
+        f5.request.invalid, whose prose describes the caller's own request.
+        The cause of a solve failure is in the server log under
+        `correlationId` — do not parse the prose.
+      type: object
+      required: [code, correlationId, error]
+      properties:
+        code:
+          type: string
+          enum:
+            - f5.request.invalid
+            - f5.solve.timeout
+            - f5.solve.failed
+        correlationId:
+          description: >-
+            Opaque per-request token, safe to quote in a support ticket. Ties
+            this response to its server-side log line.
+          type: string
+        error:
+          type: string
+        scope:
+          description: >-
+            Present only on f5.solve.failed. Whether a later attempt could
+            change this answer.
+          $ref: '#/components/schemas/F5RefusalScope'
+
+    F5RefusalScope:
+      description: >-
+        `session` — no retry helps, stop. `target` — the refusal is about the
+        request named by request_url; a different request may succeed.
+        Absence means session, which fails closed toward costing one attempt
+        rather than looping.
+      type: string
+      enum: [session, target]
+
+    F5SolveRequest:
+      type: object
+      required:
+        - page_url
+        - launcher_body
+        - vm_url
+        - request_url
+        - request_method
+        - token_url
+        - token_body
+      properties:
+        page_url:
+          description: Absolute URL of the page the launcher was served inline from.
+          type: string
+          format: uri
+          example: https://www.example.com/checkout
+        launcher_body:
+          description: >-
+            Canonical base64 of the inline launcher. Checked by round-trip,
+            not by character class: a value that does not re-encode to itself
+            is refused by name rather than decoded to a truncated prefix.
+          type: string
+        vm_url:
+          description: Absolute URL the VM body was served from.
+          type: string
+          format: uri
+        vm_body:
+          description: >-
+            Canonical base64 of the VM script body. Omit it when the
+            deployment serves one fused body that is both launcher and VM;
+            launcher_body is then used for both. Supplying the same value as
+            launcher_body is still understood as the fused case.
+          type: string
+        request_url:
+          description: The request the VM is to set its attested headers on.
+          type: string
+          format: uri
+        request_method:
+          description: RFC 7230 method token, passed through verbatim.
+          type: string
+          example: POST
+        request_body:
+          description: >-
+            The decorated request's body, verbatim — NOT base64. Optional;
+            absent is the same as '' (no body).
+          type: string
+        profile_id:
+          type: string
+          example: chrome-151-macos
+        js_profile:
+          $ref: '#/components/schemas/JsProfilePayload'
+        timeout:
+          description: >-
+            Outer safety net, not a pacing mechanism — the run finishes on its
+            own.
+          type: integer
+          minimum: 1
+          maximum: 120000
+          default: 20000
+        snapshot_points_ms:
+          description: >-
+            Ask for a series: fire the decorated request once at each wall-ms
+            offset, inside ONE run, and get one payload per point back. Must
+            be strictly increasing, and the last entry must be less than
+            timeout. Omit for the single emission. Every emission costs the
+            run real progress, so more points means later points land further
+            behind — see series_observer_cost.
+          type: array
+          minItems: 1
+          maxItems: 8
+          items:
+            type: integer
+            minimum: 0
+        token_url:
+          description: >-
+            Absolute URL the caller fetched. Required. Only its origin and pathname are
+            kept — the query carries the session's identity and is discarded
+            at this boundary. Never dereferenced; nothing fetches it.
+          type: string
+          format: uri
+        token_body:
+          description: >-
+            Canonical base64 of the response body the caller received for
+            token_url. Required and non-empty; must decode to UTF-8, at most
+            65536 bytes. See tokenSupply for whether it was used.
+          type: string
+
+    F5SolveResponse:
+      description: >-
+        The attested headers, for the caller to set on request_url and send
+        themselves.
+      type: object
+      required: [correlationId, headers, letters, prefix, scope, tokenSupply]
+      properties:
+        correlationId:
+          type: string
+        headers:
+          description: >-
+            Header name -> value, exactly as the VM spelled the name. Read the
+            names off this object rather than hard-coding them.
+          type: object
+          additionalProperties:
+            type: string
+        letters:
+          description: >-
+            Which of the six attested letters this solve produced. A short
+            list is a real answer: a letter is either produced with a value
+            the VM set, or refused — never invented.
+          type: array
+          items:
+            $ref: '#/components/schemas/F5AttestedLetter'
+        prefix:
+          description: >-
+            The family prefix as this deployment spells it, with no assumed
+            'x-'. null when the VM set no attested header at all.
+          type: string
+          nullable: true
+        scope:
+          $ref: '#/components/schemas/F5RefusalScope'
+        tokenSupply:
+          $ref: '#/components/schemas/F5TokenSupplyOutcome'
+        payloads:
+          description: >-
+            One entry per requested snapshot point, in fire order; absent when
+            no series was asked for. When present, the top-level headers and
+            letters ARE payloads[0] — send payloads in order and ignore the
+            top-level bag.
+          type: array
+          items:
+            $ref: '#/components/schemas/F5Payload'
+        series_checks:
+          description: >-
+            Which cross-snapshot checks ran, so "checked and held" is never
+            confused with "never checked". A 200 with this present means every
+            check listed passed; a series that failed one is a failed solve.
+          type: array
+          items:
+            type: string
+            enum:
+              - every-point-emitted
+              - subject-points-distinct
+              - subject-points-increasing
+              - prefix-stable
+              - letters-non-shrinking
+        series_observer_cost:
+          description: >-
+            What asking for this many points cost the subject by the time the
+            last point fired. On the wire because it is the one number telling
+            a caller their own request changed the answer — act on it by
+            asking for fewer points.
+          type: integer
+
+    F5AttestedLetter:
+      description: >-
+        The six header letters this family attests. The set is closed: a
+        seventh letter would be invented.
+      type: string
+      enum: [a, b, c, d, f, z]
+
+    F5TokenSupplyOutcome:
+      description: >-
+        What became of the supplied token. `unmatched` — the VM never requested
+        that origin + pathname, so the body was never served: the URL is wrong,
+        or this deployment does not make the request. `delivered` — the VM
+        requested it and received the body. Always present, including on a
+        refusal, because a token that matched nothing otherwise produces a
+        completely ordinary solve.
+      type: string
+      enum: [unmatched, delivered]
+
+    F5Payload:
+      description: One emission of a series, and where in the run it came from.
+      type: object
+      required:
+        - displaced_handler_calls
+        - handler_calls_after_emit
+        - headers
+        - index
+        - letters
+        - observed_at_ms
+        - observed_handler_calls
+        - prefix
+        - requested_at_ms
+        - subject_handler_calls
+      properties:
+        index:
+          description: >-
+            Position in the series, 0-based. This drive's fire order, NOT an
+            emission ordinal the VM knows about — it has none.
+          type: integer
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        letters:
+          type: array
+          items:
+            $ref: '#/components/schemas/F5AttestedLetter'
+        prefix:
+          type: string
+          nullable: true
+        requested_at_ms:
+          description: The wall-ms offset the caller asked for.
+          type: integer
+        observed_at_ms:
+          description: Wall-ms at which this emission actually fired.
+          type: integer
+        subject_handler_calls:
+          description: >-
+            THE FIGURE THAT ORDERS THE SERIES — the reading with every earlier
+            emission's own cost subtracted out. Compare two points on this,
+            not on observed_handler_calls, which counts our own emissions and
+            can invert between differently shaped series.
+          type: integer
+        observed_handler_calls:
+          description: >-
+            The raw absolute reading at this emission. Published because it is
+            what was observed; it is not the ordering key.
+          type: integer
+        handler_calls_after_emit:
+          description: >-
+            The reading immediately after this emission returned, so the
+            emission's own cost is visible rather than folded into the next
+            point's address.
+          type: integer
+        displaced_handler_calls:
+          description: >-
+            How many of this point's calls were spent by THIS series' own
+            earlier emissions rather than by the subject. Zero on payloads[0]
+            by construction. Asking for more points moves the later ones, and
+            this is by how much.
+          type: integer

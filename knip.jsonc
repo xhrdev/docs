@@ -1,0 +1,15 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignoreBinaries": ["jq"],
+  "ignoreDependencies": [
+    // imported by .vitepress/config.mts; comes in through vitepress
+    "vite",
+    "@typescript-eslint/eslint-plugin",
+    "@typescript-eslint/parser",
+    "@scalar/api-reference",
+    "@typescript/native-preview",
+    // VitePress's `sitemap` site-config option loads this as a peer dep
+    // internally; nothing in this repo imports it directly.
+    "sitemap"
+  ]
+}

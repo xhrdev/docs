@@ -1,0 +1,12 @@
+name: cleanup pr caches
+
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  cleanup-pr-caches:
+    uses: xhrdev/actions/.github/workflows/cleanup-pr-caches.yml@master
+    permissions:
+      actions: write

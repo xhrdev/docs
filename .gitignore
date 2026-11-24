@@ -1,0 +1,19 @@
+dist/
+dist0/
+cdk.out/
+target/
+coverage/
+result/
+
+# Generated files
+sdk/spec-generated.ts
+
+.DS_Store
+
+!certs
+
+# sst
+.sst
+
+.vitepress/cache
+!vitepress/config.mts

@@ -1,0 +1,31 @@
+{
+  "extends": "@skilbjo/config-rc/tsconfig.json",
+  "include": [
+    ".eslintrc.cjs",
+    ".vitepress/config.mts",
+    ".vitepress/theme/**/*.ts",
+    "sdk/**/*.ts",
+    "test/**/*.ts"
+  ],
+  "exclude": [
+    "dist",
+    "dist0",
+    "node_modules"
+  ],
+  "compilerOptions": {
+    "paths": {
+      "#src/*.js": [
+        "./src/*"
+      ],
+      "#sdk/*.js": [
+        "./sdk/*"
+      ],
+      "#test/*.js": [
+        "./test/*"
+      ]
+    },
+    "types": [
+      "node"
+    ]
+  }
+}
