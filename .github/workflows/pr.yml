@@ -43,3 +43,6 @@ jobs:
     uses: xhrdev/actions/.github/workflows/dependabot-approve-and-automerge.yml@master
     needs:
       - build-and-test
+    permissions:
+      pull-requests: write
+      contents: write
