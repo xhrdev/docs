@@ -13,6 +13,12 @@ updates:
         update-types:
           - minor
           - patch
+      # security updates are one pr per package unless grouped explicitly;
+      # `groups` above only applies to routine version updates.
+      security:
+        applies-to: security-updates
+        patterns:
+          - '*'
     versioning-strategy: increase
     open-pull-requests-limit: 5
     commit-message:
