@@ -28,7 +28,7 @@
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",
     "docs:preview": "vitepress dev",
-    "npm:prepare": "mkdir -p dist && node scripts/generate-openapi-string.js && cp sdk/* dist/ && node scripts/replace-imports.js dist/sdk.ts && npx tsc -p tsconfig.build.json && jq '{publishConfig, main, typings, \"$schema\", type} | . + { name: \"@xhrdev/sdk\", main: \"sdk.js\", typings: \"sdk.d.ts\", type: \"module\" }' package.json >dist/package.json && rm -f dist/index.html dist/sdk.ts dist/spec-generated.ts dist/openapi.ts && node scripts/replace-imports.js dist/sdk.js",
+    "npm:prepare": "mkdir -p dist && node scripts/generate-openapi-string.js && cp sdk/* dist/ && node scripts/replace-imports.js dist/sdk.ts && npx tsc -p tsconfig.build.json && jq '{publishConfig, main, typings, \"$schema\", type, repository} | . + { name: \"@xhrdev/sdk\", main: \"sdk.js\", typings: \"sdk.d.ts\", type: \"module\" }' package.json >dist/package.json && rm -f dist/index.html dist/sdk.ts dist/spec-generated.ts dist/openapi.ts && node scripts/replace-imports.js dist/sdk.js",
     "npm:prepare:npm": "cp -r dist dist0 && jq 'del(.publishConfig) | . + { publishConfig: { registry: \"https://registry.npmjs.org/\", \"access\": \"public\", } }' dist/package.json >dist0/package.json",
     "sdk:build": "npx openapi-typescript ./sdk/openapi.yml -o ./sdk/openapi.ts",
     "sdk:preview": "npx live-server ./sdk --port=8080 --open=index.html --no-css-inject --no-html-inject --no-js-inject --cors",
