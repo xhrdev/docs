@@ -23,7 +23,7 @@ we collect, store, use, and/or process information when you:
 - Engage with us in sales or marketing activities
 
 **Questions or concerns?** Contact us at
-[privacy@xhr.dev](mailto:privacy@xhr.dev).
+[legal@xhrdev.com](mailto:legal@xhrdev.com).
 
 ---
 
@@ -40,7 +40,7 @@ we collect, store, use, and/or process information when you:
   in [section 2](#_2-evaluation-services-optional).
 - **Who is responsible for this data?** XHR Software Inc., a Delaware
   corporation, is the controller of the business data described here. Reach
-  us at [privacy@xhr.dev](mailto:privacy@xhr.dev).
+  us at [legal@xhrdev.com](mailto:legal@xhrdev.com).
 - **Do we receive information from third parties?** Only from our contract
   platform (Common Paper) and bank (Mercury), and only what's necessary to
   execute your agreement and reconcile payment.
@@ -139,7 +139,7 @@ our custody to begin with. See [Security](/security).
 ## 9. Children's Data
 
 We don't knowingly collect information from anyone under 18. If you believe
-we have, contact [legal@xhr.dev](mailto:legal@xhr.dev).
+we have, contact [legal@xhrdev.com](mailto:legal@xhrdev.com).
 
 ## 10. Your Privacy Rights
 
@@ -153,7 +153,7 @@ categories we collect (identifiers, commercial information such as licence
 and payment records, and, for the evaluation services, internet activity
 data). We don't sell or share personal information for cross-context
 advertising, and we won't discriminate against you for asking. Contact
-[legal@xhr.dev](mailto:legal@xhr.dev) to exercise these rights.
+[legal@xhrdev.com](mailto:legal@xhrdev.com) to exercise these rights.
 
 ## 11. Do Not Track
 
@@ -173,5 +173,4 @@ We'll update the "Last updated" date above when this notice changes.
 
 ## 14. Contact
 
-[privacy@xhr.dev](mailto:privacy@xhr.dev) /
-[legal@xhr.dev](mailto:legal@xhr.dev)
+[legal@xhrdev.com](mailto:legal@xhrdev.com)

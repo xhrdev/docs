@@ -19,7 +19,7 @@ proxies through xhr.dev's infrastructure. See [Deployment](/deployment).
 - **DataDome** — captcha and interstitial challenges
 - **F5 / Shape** — attested request headers for a request you name
 
-Don't see a provider you need? [Message us](mailto:info@xhr.dev).
+Don't see a provider you need? [Message us](mailto:hello@xhrdev.com).
 
 ### 4. How do I integrate it?
 
@@ -44,7 +44,7 @@ a prompt and a skill you can install.
 
 Per-customer, via a signed licence file (`licence.json` + `licence.sig`)
 that the container verifies locally at startup — no phone-home to xhr.dev.
-[Contact us](mailto:info@xhr.dev) to get one issued. See
+[Contact us](mailto:hello@xhrdev.com) to get one issued. See
 [Deployment](/deployment) for how licence delivery and renewal work.
 
 ### 6. What does it cost?
@@ -70,7 +70,7 @@ current API doesn't expose.
 ### 10. How do I get support?
 
 [Book a call](https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ2uDlsqLG_VZLl3s3ri_-YIXD3xXi5WzY21o0dFuk6Gq4HhcXwJBxUz-1K6kMGxTEf4oIPny-nV),
-[email us](mailto:info@xhr.dev), or find us on
+[email us](mailto:hello@xhrdev.com), or find us on
 [GitHub](https://github.com/xhrdev) and
 [LinkedIn](https://www.linkedin.com/company/xhrdev/).
 

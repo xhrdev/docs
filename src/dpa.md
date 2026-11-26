@@ -115,4 +115,4 @@ reference, with Customer as exporter and XHR Software as importer.
 
 ## 7. Contact
 
-[legal@xhr.dev](mailto:legal@xhr.dev)
+[legal@xhrdev.com](mailto:legal@xhrdev.com)

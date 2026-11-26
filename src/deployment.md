@@ -27,7 +27,7 @@ is missing, expired, or tampered with, the container exits immediately with
 nears expiry, xhr.dev sends updated `licence.json` / `licence.sig` files —
 no image rebuild or redeploy of anything but those two files is needed.
 
-Don't have a licence yet? [Contact us](mailto:info@xhr.dev) or
+Don't have a licence yet? [Contact us](mailto:hello@xhrdev.com) or
 [book a call](https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ2uDlsqLG_VZLl3s3ri_-YIXD3xXi5WzY21o0dFuk6Gq4HhcXwJBxUz-1K6kMGxTEf4oIPny-nV).
 
 ## Pulling the image
@@ -205,7 +205,7 @@ instead:
 ```
 
 If you're not on ECS, leave these unset — the defaults are appropriate for
-most deployments. [Contact us](mailto:info@xhr.dev) if you're deploying
+most deployments. [Contact us](mailto:hello@xhrdev.com) if you're deploying
 somewhere else and want an equivalent hardened setup.
 
 ### Licence delivery via secrets manager

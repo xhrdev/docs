@@ -27,7 +27,7 @@ info:
     omit it against your own container.
   contact:
     name: xhr.dev support
-    email: info@xhr.dev
+    email: hello@xhrdev.com
 
 servers:
   - url: http://localhost:3000

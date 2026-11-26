@@ -82,4 +82,4 @@ Please do not send production credentials, session cookies for accounts
 you do not control, or end-user personal data to the evaluation services.
 
 For questions about our sub-processors, contact
-[legal@xhr.dev](mailto:legal@xhr.dev).
+[legal@xhrdev.com](mailto:legal@xhrdev.com).

@@ -55,7 +55,7 @@ without a valid licence. Two properties matter for your threat model:
   starting in a degraded state.
 
 We don't publish the protection mechanism. If your security team needs to
-assess it for an approval, [contact us](mailto:info@xhr.dev) and we'll walk
+assess it for an approval, [contact us](mailto:hello@xhrdev.com) and we'll walk
 through it with them directly, under NDA if you'd prefer.
 
 ## Network exposure
@@ -85,4 +85,4 @@ through it with them directly, under NDA if you'd prefer.
 
 For anything not covered here — architecture review, a security
 questionnaire, or a call with your security team —
-[contact us](mailto:info@xhr.dev).
+[contact us](mailto:hello@xhrdev.com).

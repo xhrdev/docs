@@ -110,7 +110,7 @@ export default defineConfig({
     // Mirrors the marketing site's footer, minus the links already in the nav.
     footer: {
       copyright:
-        '© 2026 XHR Software Inc. · <a href="https://xhrdev.com/">xhr.dev</a> · <a href="https://status.xhr.dev/">status</a> · <a href="mailto:info@xhr.dev">info@xhr.dev</a>',
+        '© 2026 XHR Software Inc. · <a href="https://xhrdev.com/">xhr.dev</a> · <a href="https://status.xhr.dev/">status</a> · <a href="mailto:hello@xhrdev.com">hello@xhrdev.com</a>',
       message:
         'Self-hosted anti-bot solvers. <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a>',
     },
@@ -119,7 +119,7 @@ export default defineConfig({
 
     nav: [
       { link: 'https://xhrdev.com/', text: 'xhr.dev' },
-      { link: 'mailto:info@xhr.dev', text: 'Request a Licence' },
+      { link: 'mailto:hello@xhrdev.com', text: 'Request a Licence' },
       {
         link: 'https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ2uDlsqLG_VZLl3s3ri_-YIXD3xXi5WzY21o0dFuk6Gq4HhcXwJBxUz-1K6kMGxTEf4oIPny-nV',
         text: 'Book a Call',

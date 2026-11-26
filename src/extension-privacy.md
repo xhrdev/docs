@@ -168,4 +168,4 @@ extension's Chrome Web Store listing.
 
 ## Contact
 
-[privacy@xhr.dev](mailto:privacy@xhr.dev)
+[legal@xhrdev.com](mailto:legal@xhrdev.com)

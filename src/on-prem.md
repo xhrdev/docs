@@ -172,7 +172,7 @@ See [Deployment](/deployment) for delivery and renewal.
 - **DataDome** — captcha and interstitial challenges, via a single-shot
   HTTP call. [API reference](/api-datadome)
 
-Don't see what you need? [Message us](mailto:info@xhr.dev).
+Don't see what you need? [Message us](mailto:hello@xhrdev.com).
 
 ## The hosted trial box
 

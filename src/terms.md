@@ -106,7 +106,7 @@ including from how you use the Software against third-party websites.
 
 XHR Software Inc may revoke or decline to renew your licence at any time in
 accordance with your licensing agreement. You may stop using the Software at
-any time by contacting [support@xhr.dev](mailto:support@xhr.dev). On
+any time by contacting [hello@xhrdev.com](mailto:hello@xhrdev.com). On
 termination or expiry you must stop running the Software and delete the
 images and licence files, and sections that by their nature should survive
 (intellectual property, disclaimers, liability, indemnification, governing
@@ -126,12 +126,12 @@ of it.
 ## 13. Deployment, Pricing & Payment
 
 The Software is licensed for on-prem, self-hosted Docker deployment. For
-pricing, [contact us](mailto:info@xhr.dev). Fees, payment method (Common
+pricing, [contact us](mailto:hello@xhrdev.com). Fees, payment method (Common
 Paper billing or invoice paid by bank transfer), and payment terms are set
 out in your order form, as are other commercial terms such as support
 and service levels, confidentiality, and any export or compliance terms.
 
 ## 14. Contact
 
-[support@xhr.dev](mailto:support@xhr.dev) — or
+[hello@xhrdev.com](mailto:hello@xhrdev.com) — or
 [book a call](https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ2uDlsqLG_VZLl3s3ri_-YIXD3xXi5WzY21o0dFuk6Gq4HhcXwJBxUz-1K6kMGxTEf4oIPny-nV).

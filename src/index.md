@@ -11,7 +11,7 @@ It currently solves challenges from:
 - **DataDome** — captcha and interstitial challenges
 - **F5 / Shape** — attested request headers for a request you name
 
-Don't see the provider you need? [Message us](mailto:info@xhr.dev).
+Don't see the provider you need? [Message us](mailto:hello@xhrdev.com).
 
 ## How it fits into your stack
 
@@ -38,7 +38,7 @@ Read next:
 ## Quickstart
 
 You'll need an invite to your private GitHub org (the image lives there) and a
-`licence.json` / `licence.sig` pair — [contact us](mailto:info@xhr.dev)
+`licence.json` / `licence.sig` pair — [contact us](mailto:hello@xhrdev.com)
 or [book a call](https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ2uDlsqLG_VZLl3s3ri_-YIXD3xXi5WzY21o0dFuk6Gq4HhcXwJBxUz-1K6kMGxTEf4oIPny-nV)
 to get both issued.
 
