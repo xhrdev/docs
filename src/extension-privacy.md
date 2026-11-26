@@ -22,7 +22,7 @@ stated first:
 - **Self-hosted.** You run the solver container on your own hardware or in your
   own cloud account. Data goes from your browser to your own service. The author
   of this extension never receives it and has no way to.
-- **Hosted trial (`trial.xhr.dev`).** A solver instance operated by XHR
+- **Hosted trial (`trial.xhrdev.com`).** A solver instance operated by XHR
   Software Inc. for evaluation, gated behind an API key. If you enter this
   host, the data described under *What is collected* is transmitted to a server
   that company operates, rather than to one of your own.

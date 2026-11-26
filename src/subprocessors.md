@@ -62,7 +62,7 @@ licensing agreement.
 ## Hosted evaluation services (opt-in, prospects only)
 
 These apply only if you choose to send requests to our hosted trial solver
-(`trial.xhr.dev` or the trial box the examples point at). They are not used
+(`trial.xhrdev.com` or the trial box the examples point at). They are not used
 by a licensed on-prem deployment.
 
 - **Oracle Cloud Infrastructure**

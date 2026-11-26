@@ -32,7 +32,7 @@ info:
 servers:
   - url: http://localhost:3000
     description: Your self-hosted xhrdev container — no API key
-  - url: https://trial.xhr.dev
+  - url: https://trial.xhrdev.com
     description: >-
       Hosted trial box, for evaluations. Requires the x-api-key issued with
       your trial.
