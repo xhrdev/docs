@@ -9,7 +9,7 @@ one form-encoded body back to the origin. The response re-issues `ak_bmsc`.
 would have sent**. You send it yourself.
 
 > All providers are described in one machine-readable spec:
-> [download openapi.yml](/openapi.yml) · [browse interactively](https://docs.xhr.dev/api.html).
+> [download openapi.yml](/openapi.yml) · [browse interactively](https://docs.xhrdev.com/api.html).
 
 ::: info Authentication
 None. The container is licence-gated at startup, not per-request — there's no

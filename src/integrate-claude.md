@@ -16,9 +16,9 @@ read the whole thing in one fetch rather than crawling pages:
 
 | URL | What it is |
 |---|---|
-| <https://docs.xhr.dev/llms.txt> | index of every page, with descriptions |
-| <https://docs.xhr.dev/llms-full.txt> | every page's full text, concatenated |
-| <https://docs.xhr.dev/openapi.yml> | the API contract, machine-readable |
+| <https://docs.xhrdev.com/llms.txt> | index of every page, with descriptions |
+| <https://docs.xhrdev.com/llms-full.txt> | every page's full text, concatenated |
+| <https://docs.xhrdev.com/openapi.yml> | the API contract, machine-readable |
 
 Every page also has a **Copy as Markdown** button at the top, if you'd rather
 paste one page into a chat.
@@ -37,7 +37,7 @@ CA EDD sits behind Akamai bot defence, which blocks our Playwright login. We
 have a vendor with an Akamai solver called xhr.dev.
 
 Read these before writing any code:
-  - https://docs.xhr.dev/llms-full.txt  (all of the docs in one fetch; if you
+  - https://docs.xhrdev.com/llms-full.txt  (all of the docs in one fetch; if you
     prefer pages: the Akamai API reference and "Via a browser (Playwright)")
   - https://github.com/xhrdev/examples — read the repo README *and*
     src/akamai/README.md, not just the API docs. The vendor-directory READMEs
@@ -124,7 +124,7 @@ self-hosted container ignores the header.
 
 Fetch these. Do not work from memory of them.
 
-- `https://docs.xhr.dev/llms-full.txt` — all of the docs in one fetch
+- `https://docs.xhrdev.com/llms-full.txt` — all of the docs in one fetch
 - `https://github.com/xhrdev/examples` — the README, **and** the vendor
   README for whichever vendor applies (`src/akamai/README.md` or
   `src/datadome/README.md`). The vendor READMEs carry the protocol details

@@ -7,7 +7,7 @@ Unlike Akamai, DataDome solving is **single-shot HTTP** — there's no
 WebSocket session. Each request fully resolves one challenge and returns.
 
 > Both `/akamai` and `/dd` are described in one machine-readable spec:
-> [download openapi.yml](/openapi.yml) · [browse interactively](https://docs.xhr.dev/api.html).
+> [download openapi.yml](/openapi.yml) · [browse interactively](https://docs.xhrdev.com/api.html).
 
 `POST /dd/solve` takes a DataDome challenge payload (the `dd` object) and
 cookie that you've already extracted from the target site, and returns

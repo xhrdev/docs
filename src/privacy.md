@@ -15,8 +15,8 @@
 This privacy notice for xhr.dev ("we," "us," or "our") describes how and why
 we collect, store, use, and/or process information when you:
 
-- Visit our website at [https://xhr.dev/](https://xhr.dev/) or
-  [https://docs.xhr.dev/](https://docs.xhr.dev/)
+- Visit our website at [https://xhrdev.com/](https://xhrdev.com/) or
+  [https://docs.xhrdev.com/](https://docs.xhrdev.com/)
 - Contact us about, purchase, or receive support for a licence to our
   on-prem software
 - Try our hosted evaluation service (the trial solver)
@@ -121,7 +121,7 @@ correspondence is kept for as long as it is useful to support you.
 
 ## 7. Our Websites
 
-Our websites (`xhr.dev` and `docs.xhr.dev`) are static, set no cookies, and
+Our websites (`xhr.dev` and `docs.xhrdev.com`) are static, set no cookies, and
 use no analytics, advertising or tracking scripts; fonts are self-hosted.
 Our hosting providers (see [Subprocessors](/subprocessors)) see ordinary web
 server data such as your IP address. If you use our call-booking link, the

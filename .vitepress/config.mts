@@ -95,7 +95,7 @@ export default defineConfig({
     },
   },
   sitemap: {
-    hostname: 'https://docs.xhr.dev',
+    hostname: 'https://docs.xhrdev.com',
   },
 
   srcDir: 'src',
@@ -110,7 +110,7 @@ export default defineConfig({
     // Mirrors the marketing site's footer, minus the links already in the nav.
     footer: {
       copyright:
-        '© 2026 XHR Software Inc. · <a href="https://xhr.dev/">xhr.dev</a> · <a href="https://status.xhr.dev/">status</a> · <a href="mailto:info@xhr.dev">info@xhr.dev</a>',
+        '© 2026 XHR Software Inc. · <a href="https://xhrdev.com/">xhr.dev</a> · <a href="https://status.xhr.dev/">status</a> · <a href="mailto:info@xhr.dev">info@xhr.dev</a>',
       message:
         'Self-hosted anti-bot solvers. <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a>',
     },
@@ -118,7 +118,7 @@ export default defineConfig({
     logo: '/logo.svg',
 
     nav: [
-      { link: 'https://xhr.dev/', text: 'xhr.dev' },
+      { link: 'https://xhrdev.com/', text: 'xhr.dev' },
       { link: 'mailto:info@xhr.dev', text: 'Request a Licence' },
       {
         link: 'https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ2uDlsqLG_VZLl3s3ri_-YIXD3xXi5WzY21o0dFuk6Gq4HhcXwJBxUz-1K6kMGxTEf4oIPny-nV',
@@ -167,7 +167,7 @@ export default defineConfig({
           { link: '/api-f5', text: 'F5 / Shape' },
           { link: '/openapi.yml', text: 'OpenAPI Spec (download)' },
           {
-            link: 'https://docs.xhr.dev/api.html',
+            link: 'https://docs.xhrdev.com/api.html',
             text: 'OpenAPI Spec (browse)',
           },
         ],
@@ -233,7 +233,7 @@ export default defineConfig({
   // hatch, running once per page at build time with that page's own title
   // and description already resolved.
   transformHead: ({ pageData }) => {
-    const url = `https://docs.xhr.dev${canonicalPath(pageData.relativePath)}`;
+    const url = `https://docs.xhrdev.com${canonicalPath(pageData.relativePath)}`;
     const description =
       pageData.description ||
       "Self-hosted anti-bot solvers that keep working after the vendor's next update.";
@@ -244,7 +244,7 @@ export default defineConfig({
       ['meta', { content: description, property: 'og:description' }],
       ['meta', { content: url, property: 'og:url' }],
       ['meta', { content: 'article', property: 'og:type' }],
-      ['meta', { content: 'docs.xhr.dev', property: 'og:site_name' }],
+      ['meta', { content: 'docs.xhrdev.com', property: 'og:site_name' }],
       ['meta', { content: '/logo.svg', property: 'og:image' }],
       ['meta', { content: 'summary', name: 'twitter:card' }],
       ['meta', { content: pageData.title, name: 'twitter:title' }],

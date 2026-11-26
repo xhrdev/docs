@@ -32,7 +32,7 @@ Read next:
 - [SDK](/sdk) — typed request/response definitions
 - [Akamai](/api-akamai) · [DataDome](/api-datadome) · [F5 / Shape](/api-f5) API reference
 - [Deployment guide](/deployment)
-- [OpenAPI spec](/openapi.yml) ([browse interactively](https://docs.xhr.dev/api.html))
+- [OpenAPI spec](/openapi.yml) ([browse interactively](https://docs.xhrdev.com/api.html))
 - Runnable examples against live sites: [xhrdev/examples](https://github.com/xhrdev/examples)
 
 ## Quickstart

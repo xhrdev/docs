@@ -14,7 +14,7 @@ All endpoints are mounted under `/akamai` on your running container
 (`http://host:3000/akamai/...`).
 
 > `/akamai`, `/dd` and `/f5` are described in one machine-readable spec:
-> [download openapi.yml](/openapi.yml) · [browse interactively](https://docs.xhr.dev/api.html).
+> [download openapi.yml](/openapi.yml) · [browse interactively](https://docs.xhrdev.com/api.html).
 > The WebSocket session isn't representable in OpenAPI 3.0, so it's documented
 > only on the [sensor page](/api-akamai-sensor#websocket-session).
 

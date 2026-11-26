@@ -8,7 +8,7 @@ info:
     inside your own infrastructure — there is no hosted/cloud server.
 
     Akamai additionally exposes a stateful WebSocket session at
-    `/akamai/session`, documented separately (see docs.xhr.dev/api-akamai)
+    `/akamai/session`, documented separately (see docs.xhrdev.com/api-akamai)
     since OpenAPI 3.0 doesn't model WebSocket protocols.
 
     ## Authentication

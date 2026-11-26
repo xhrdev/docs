@@ -7,7 +7,7 @@ Like DataDome and unlike Akamai's sensor channel, F5 solving is **single-shot
 HTTP** — one request, one answer, no WebSocket session.
 
 > All providers are described in one machine-readable spec:
-> [download openapi.yml](/openapi.yml) · [browse interactively](https://docs.xhr.dev/api.html).
+> [download openapi.yml](/openapi.yml) · [browse interactively](https://docs.xhrdev.com/api.html).
 
 `POST /f5/solve` takes the two script bodies the protected page served you and
 a description of the request you want decorated, and returns the **header bag

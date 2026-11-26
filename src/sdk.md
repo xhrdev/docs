@@ -105,7 +105,7 @@ console.log(openApiSpec); // the spec as a YAML string
 ```
 
 You can also [download `openapi.yml`](/openapi.yml) directly or
-[browse it interactively](https://docs.xhr.dev/api.html) — useful for
+[browse it interactively](https://docs.xhrdev.com/api.html) — useful for
 generating a client in a language the SDK doesn't cover.
 
 ## Covered endpoints

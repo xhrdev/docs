@@ -20,7 +20,7 @@ running (see [Deployment](/deployment)), e.g. `http://localhost:3000`.
 
 Full contracts: [Akamai](/api-akamai) · [DataDome](/api-datadome) ·
 [F5 / Shape](/api-f5) · [OpenAPI spec](/openapi.yml)
-([browse](https://docs.xhr.dev/api.html)).
+([browse](https://docs.xhrdev.com/api.html)).
 
 ## Authentication
 

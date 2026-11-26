@@ -4,12 +4,12 @@
 
 TypeScript types for the xhr.dev on-prem API.
 
-[docs](https://docs.xhr.dev/)
+[docs](https://docs.xhrdev.com/)
 
 This package ships **types only** — request/response shapes for the HTTP API
 exposed by your self-hosted `xhrdev` container. It is not an HTTP client:
 there's no auth/proxy scheme to wrap, since you're calling `http://<your
-host>:3000` directly. See [Getting Started](https://docs.xhr.dev/) for
+host>:3000` directly. See [Getting Started](https://docs.xhrdev.com/) for
 `curl`/Node/Python request examples.
 
 ## Installation
@@ -71,15 +71,15 @@ type AkamaiSolveOperation = sdk.operations['postAkamaiSolve'];
 
 - **GET** `/hc` — health check
 - **POST** `/akamai/solve` — solve an Akamai challenge from a URL
-- **WS** `/akamai/session` — streaming solve session for browser-automation setups (see [Akamai API reference](https://docs.xhr.dev/api-akamai))
+- **WS** `/akamai/session` — streaming solve session for browser-automation setups (see [Akamai API reference](https://docs.xhrdev.com/api-akamai))
 - **POST** `/dd/solve` — solve a DataDome challenge from an extracted payload
 
-Full reference: [Akamai](https://docs.xhr.dev/api-akamai),
-[DataDome](https://docs.xhr.dev/api-datadome).
+Full reference: [Akamai](https://docs.xhrdev.com/api-akamai),
+[DataDome](https://docs.xhrdev.com/api-datadome).
 
 ## Authentication
 
 None at the API layer — the container has no built-in auth in front of
 `/akamai` and `/dd`. It's licence-gated at startup (see
-[Deployment](https://docs.xhr.dev/deployment)); put it behind your own
+[Deployment](https://docs.xhrdev.com/deployment)); put it behind your own
 network boundary or reverse-proxy auth as appropriate for your environment.

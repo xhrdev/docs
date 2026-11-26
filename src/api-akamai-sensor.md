@@ -9,7 +9,7 @@ on your running container (`http://host:3000/akamai/...`).
 > [Akamai overview](/api-akamai).
 
 > Both `/akamai` and `/dd` are described in one machine-readable spec:
-> [download openapi.yml](/openapi.yml) · [browse interactively](https://docs.xhr.dev/api.html).
+> [download openapi.yml](/openapi.yml) · [browse interactively](https://docs.xhrdev.com/api.html).
 > The WebSocket session below isn't representable in OpenAPI 3.0, so it's
 > documented only here.
 

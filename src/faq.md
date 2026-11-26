@@ -133,6 +133,6 @@ Yes, and it's a good fit — the job is well-specified and there are runnable
 examples to copy. [Via Claude](/integrate-claude) has a prompt to paste, a
 Claude Code skill to install, and the list of things agents reliably get wrong
 here. The docs are also published as
-[llms.txt](https://docs.xhr.dev/llms.txt) /
-[llms-full.txt](https://docs.xhr.dev/llms-full.txt) so an agent can read the
+[llms.txt](https://docs.xhrdev.com/llms.txt) /
+[llms-full.txt](https://docs.xhrdev.com/llms-full.txt) so an agent can read the
 whole site in one fetch.
