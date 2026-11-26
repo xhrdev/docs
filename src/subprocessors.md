@@ -1,6 +1,6 @@
 # Sub-processors of xhr.dev
 
-**Updated: 2026-10-18**
+**Updated: 2026-11-25**
 
 xhr.dev's product is on-prem software: it runs inside your infrastructure,
 and your application traffic and end-user data never pass through any
@@ -17,7 +17,7 @@ service** (the trial solver) is run by us, so data you send to it does pass
 through systems we operate. The vendors behind it are listed separately
 below.
 
-This list is accurate as of 2026-11-15 and will be updated as our vendors
+This list is accurate as of 2026-11-25 and will be updated as our vendors
 change. Customers will be notified of significant updates per their
 licensing agreement.
 
@@ -47,17 +47,17 @@ licensing agreement.
   authenticate with.
 
 - **GitHub Pages**
-  Hosting for this documentation site and the marketing site (`xhr.dev`).
-  Both are static, with no cookies or analytics; GitHub receives only
-  ordinary web traffic (page requests), not any data from your deployment.
+  Hosting for this documentation site (`docs.xhrdev.com`) and the marketing
+  site (`xhrdev.com`). Both are static, with no cookies or analytics; GitHub
+  receives only ordinary web traffic (page requests), not any data from your
+  deployment.
 
-- **Fly.io**
-  Serves redirects for our secondary domain (`xhrdev.com`) to `xhr.dev`.
-  Receives only the request (IP address, path) of visitors who use that
-  old domain.
-
-- **Amazon Web Services (DNS)**
-  DNS (Route 53) for our domains.
+- **Amazon Web Services (DNS and redirects)**
+  DNS (Route 53) for our domains, and CloudFront, which serves redirects
+  from our former domain (`xhr.dev`, `www.xhr.dev` and `docs.xhr.dev`) to
+  `xhrdev.com` and `docs.xhrdev.com`. For visitors who use the old domain
+  it receives only the request (IP address, path), and no cookies or
+  analytics are involved.
 
 ## Hosted evaluation services (opt-in, prospects only)
 
