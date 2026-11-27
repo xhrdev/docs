@@ -6,13 +6,6 @@ on:
   workflow_dispatch:
 jobs:
   remove-old-artefacts:
-    runs-on: ubuntu-slim
-    timeout-minutes: 10
     permissions:
       actions: write
-    steps:
-      - name: Remove old artefacts
-        uses: c-hive/gha-remove-artifacts@v1
-        with:
-          age: '1 day'
-          skip-recent: 1
+    uses: xhrdev/actions/.github/workflows/remove-old-artefacts.yml@master
